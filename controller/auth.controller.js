@@ -51,7 +51,7 @@ export class AuthController {
     
         const {rows} = await KanbanDB.searchUser(username)
         
-        if (rows.length > 0) { return res.status(400).send('User already exist') }
+        if (rows.length > 0) { return res.status(401).send('User already exist') }
     
         const hashedPasswd = await bcrypt.hash(passwd, 7)
         await KanbanDB.addUser(username, hashedPasswd, email)

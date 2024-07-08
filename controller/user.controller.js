@@ -51,7 +51,7 @@ export class UserController {
         const { user_id } = req.session.user
         const { section_id } = req.body
 
-        if (!validate(section_id)) return res.status(400).send('Error: Incorrect UUID')
+        if (!validate(section_id)) return res.status(401).send('Error: Incorrect UUID')
 
         const section_user_id = await KanbanDB.getUserID(section_id)
     
@@ -76,7 +76,7 @@ export class UserController {
         if (!title || !content || !section_id) 
             return res.status(400).send("Bad request: missing fields")
     
-        if (!validate(section_id)) return res.status(400).send('Error: Incorrect UUID')
+        if (!validate(section_id)) return res.status(401).send('Error: Incorrect UUID')
     
         const section_user_id = await KanbanDB.getUserID(section_id)
         if (section_user_id.rows[0].user_id != user_id) 
@@ -96,7 +96,7 @@ export class UserController {
         if (!card_id) 
             return res.status(400).send("Bad request: missing card id field")
 
-        if (!validate(card_id)) return res.status(400).send('Error: Incorrect UUID')
+        if (!validate(card_id)) return res.status(401).send('Error: Incorrect UUID')
         
         const section_id = await KanbanDB.getSectionID(card_id)
     

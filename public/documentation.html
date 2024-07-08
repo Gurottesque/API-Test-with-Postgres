@@ -72,6 +72,9 @@
                 </tr>
             </table>
             <p>Establece un JWT en la cookie 'access-token'.</p>
+            <p>Errores: </p>
+            <p>400 - Request malhecho o malformado </p>
+            <p>401 - Nombre o usuario incorrecto </p>
         </div>
     </div>
 
@@ -89,6 +92,9 @@
             <p>Endpoint para registrar un nuevo usuario.</p>
             <p>Recibe en el body: <code>{ "username": "string", "passwd": "string" }</code></p>
             <p>No devuelve ningún valor.</p>
+            <p>Errores: </p>
+            <p>400 - Request malhecho o malformado </p>
+            <p>401 - El usuario ya existe </p>
         </div>
     </div>
 
@@ -121,6 +127,8 @@
             <p>Recibe en el body: <code>{ "title": "string" }</code></p>
             <p>Devuelve en JSON un objeto con los detalles de la sección creada.</p>
         </div>
+        <p>Errores: </p>
+        <p>400 - Mal request, falta el titulo </p>
     </div>
 
     <div class="endpoint">
@@ -130,6 +138,10 @@
             <p>Recibe en el body: <code>{ "section_id": "string" }</code></p>
             <p>Devuelve en JSON un objeto con los detalles de la sección eliminada.</p>
         </div>
+        <p>Errores: </p>
+        <p>401 - UUID incorrecta </p>
+        <p>500 - Seccion inexistente </p>
+        <p>403 - Seccion prohibida, modificacion no autorizada </p>
     </div>
 
     <div class="endpoint">
@@ -139,6 +151,10 @@
             <p>Recibe en el body: <code>{ "title": "string", "content": "string", "section_id": "string" }</code></p>
             <p>Devuelve en JSON un objeto con los detalles de la carta creada.</p>
         </div>
+        <p>Errores: </p>
+        <p>400 - Mal request, faltan campos </p>
+        <p>401 - UUID incorrecta </p>
+        <p>403 - Seccion prohibida, modificacion no autorizada </p>
     </div>
 
     <div class="endpoint">
@@ -148,6 +164,11 @@
             <p>Recibe en el body: <code>{ "card_id": "string" }</code></p>
             <p>Devuelve en JSON un objeto con los detalles de la carta eliminada.</p>
         </div>
+        <p>Errores: </p>
+        <p>400 - Reques malformado </p>
+        <p>401 - UUID incorrecta </p>
+        <p>500 - La carta no existe </p>
+        <p>403 - Seccion prohibida, modificacion no autorizada </p>
     </div>
 
     <div class="endpoint">
