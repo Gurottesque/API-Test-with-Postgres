@@ -26,7 +26,7 @@ app.use(express.static(publicPath));
 app.use(cors(corsOptions));
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
-app.get('/api', (req, res) => {
+app.get('/api/documentation', (req, res) => {
   res.sendFile(path.join(publicPath, 'documentation.html'));
 });
 
