@@ -8,7 +8,7 @@ To install localy go through the next steps
 2. Navigate through the directory and install the dependencies
 > npm install
 
-3. Set the enviromental variables in an .env file (Look at .env.examples)
+3. Set the database through enviromental variables in an .env file (Look at .env.examples)
 
 4. Run
 > npm run dev
