@@ -1,8 +1,9 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 
 dotenv.config();
-import marked from 'marked';
+import * as marked from 'marked' ;
 
 export const pool = new pg.Pool({
     user: process.env.DB_USER || "postgres",
@@ -64,7 +65,7 @@ export class KanbanDB {
 
     static async addSection(title, user_id) {
         try {
-            await pool.query(`INSERT INTO section (title, user_id) VALUES ($1, $2)`, [title, user_id]);
+            return await pool.query(`INSERT INTO section (title, user_id) VALUES ($1, $2) RETURNING *`, [title, user_id]);
         } catch (e) {
             console.error(e);
             throw e;
@@ -91,13 +92,30 @@ export class KanbanDB {
 
     static async deleteSection(section_id) {
         try {
-            return await pool.query(`DELETE FROM section WHERE id = $1`, [section_id]);
+            return await pool.query(`DELETE FROM section WHERE id = $1 RETURNING *`, [section_id]);
         } catch(e) { console.error(e); throw e; }
     }
 
     static async deleteCard(card_id) {
         try {
-            return await pool.query(`DELETE FROM cards WHERE id = $1`, [card_id]);
+            return await pool.query(`DELETE FROM cards WHERE id = $1 RETURNING *`, [card_id]);
+        } catch(e) { console.error(e); throw e; }
+    }
+
+    static async updateUser(user_id, {username, email, password}) {
+        // TO DO: refactorizar esta porqueria usando objetos y carga dinamica de valores en la query
+        try {
+            if (username){
+                await pool.query(`UPDATE users SET username = $1 WHERE id = $2`, [username,user_id]);
+            }
+            if (email){
+                await pool.query(`UPDATE users SET email = $1 WHERE id = $2`, [email, user_id]);
+            }
+            if (password){
+                await pool.query(`UPDATE users SET passwd = $1 WHERE id = $2`, [await bcrypt.hash(password, 7), user_id]);
+            }     
+            return await pool.query('SELECT * FROM users WHERE id = $1', [user_id])
+
         } catch(e) { console.error(e); throw e; }
     }
 }

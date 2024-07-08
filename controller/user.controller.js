@@ -15,7 +15,7 @@ export class UserController {
         if (!token) {
             return res.status(403).send('Forbidden request: You are not authorized')
         }
-    
+
         try {
             const data = jwt.verify(token, SECRET_KEY);
             req.session.user = data;
@@ -38,12 +38,12 @@ export class UserController {
         const { user_id } = req.session.user
         const { title } = req.body
     
+        // Verificar que title exista
         if (!title) 
             return res.status(400).send("Bad request: missing title field")
-        await KanbanDB.addSection(title, user_id)
+        const { rows: sectionAdded } = await KanbanDB.addSection(title, user_id)
 
-        // Devolver data actualizada
-        res.send('Section created')
+        res.send(sectionAdded)
     
     }
 
@@ -62,10 +62,9 @@ export class UserController {
             return res.status(403).send('Forbidden request: The section doesnt belong to this user')
     
         
-        await KanbanDB.deleteSection(section_id)
+        const {rows: sectionDeleted} = await KanbanDB.deleteSection(section_id)
 
-        // Devolver data actualizada
-        res.send('Section deleted')
+        res.send(sectionDeleted)
     }
 
     static async createCard (req, res) {
@@ -84,10 +83,9 @@ export class UserController {
             return res.status(403).send('Forbidden request: The section doesnt belong to this user')
     
         
-        await KanbanDB.addCards(title, content, section_id)
+        const {rows: cardAdded} = await KanbanDB.addCards(title, content, section_id)
 
-        // Devolver data actualizada
-        res.send('Card created')
+        res.send(cardAdded)
     
     }
 
@@ -110,11 +108,19 @@ export class UserController {
         if (section_user_id.rows[0].user_id != user_id) 
             return res.status(403).send('Forbidden request: The section doesnt belong to this user')
      
-        await KanbanDB.deleteCard(card_id)
+        const { rows: cardDeleted } = await KanbanDB.deleteCard(card_id)
 
-        // Devolver data actualizada
-        res.send('Card deleted')
+        res.send(cardDeleted)
     
+    }
+
+    static async updateAccount (req, res) {
+        const { user_id } = req.session.user;
+        const { username, email, password } = req.body;
+
+        const { rows: dataUpdated } = await KanbanDB.updateUser(user_id, {username, email, password})
+
+        res.send(dataUpdated)
     }
 
 }

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación de API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #ddd;
+            margin: 20px;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #eee;
+        }
+        .endpoint {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+        }
+        .endpoint-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .endpoint-description {
+            margin-bottom: 10px;
+        }
+        .endpoint-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .endpoint-table th, .endpoint-table td {
+            border: 1px solid #666;
+            padding: 8px;
+            text-align: left;
+        }
+        .endpoint-table th {
+            background-color: #555;
+            color: #ddd;
+        }
+        .endpoint-table td {
+            background-color: #666;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Documentación de API</h1>
+
+    <div class="endpoint">
+        <div class="endpoint-title">POST /api/auth/login</div>
+        <div class="endpoint-description">
+            <p>Endpoint para iniciar sesión y obtener un token de acceso.</p>
+            <p>Recibe en el body: <code>{ "username": "string", "passwd": "string" }</code></p>
+            <p>Devuelve en JSON:</p>
+            <table class="endpoint-table">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>user_id</td>
+                    <td>uuid del usuario</td>
+                </tr>
+                <tr>
+                    <td>token</td>
+                    <td>JWT que representa la sesion</td>
+                </tr>
+            </table>
+            <p>Establece un JWT en la cookie 'access-token'.</p>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">POST /api/auth/logout</div>
+        <div class="endpoint-description">
+            <p>Endpoint para cerrar sesión.</p>
+            <p>Borra la cookie de sesion.</p>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">POST /api/auth/register</div>
+        <div class="endpoint-description">
+            <p>Endpoint para registrar un nuevo usuario.</p>
+            <p>Recibe en el body: <code>{ "username": "string", "passwd": "string" }</code></p>
+            <p>No devuelve ningún valor.</p>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">GET /api/user</div>
+        <div class="endpoint-description">
+            <p>Endpoint para obtener datos del usuario.</p>
+            <p>Devuelve en JSON un objeto con los datos del usuario:</p>
+            <table class="endpoint-table">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>section_id</td>
+                    <td>Identificador de la sección del usuario</td>
+                </tr>
+                <tr>
+                    <td>cards</td>
+                    <td>Array de objetos de cartas del usuario</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">POST /api/user/section</div>
+        <div class="endpoint-description">
+            <p>Endpoint para crear una nueva sección para el usuario.</p>
+            <p>Recibe en el body: <code>{ "title": "string" }</code></p>
+            <p>Devuelve en JSON un objeto con los detalles de la sección creada.</p>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">DELETE /api/user/section</div>
+        <div class="endpoint-description">
+            <p>Endpoint para eliminar una sección del usuario.</p>
+            <p>Recibe en el body: <code>{ "section_id": "string" }</code></p>
+            <p>Devuelve en JSON un objeto con los detalles de la sección eliminada.</p>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">POST /api/user/card</div>
+        <div class="endpoint-description">
+            <p>Endpoint para crear una nueva carta para el usuario.</p>
+            <p>Recibe en el body: <code>{ "title": "string", "content": "string", "section_id": "string" }</code></p>
+            <p>Devuelve en JSON un objeto con los detalles de la carta creada.</p>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">DELETE /api/user/card</div>
+        <div class="endpoint-description">
+            <p>Endpoint para eliminar una carta del usuario.</p>
+            <p>Recibe en el body: <code>{ "card_id": "string" }</code></p>
+            <p>Devuelve en JSON un objeto con los detalles de la carta eliminada.</p>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-title">PATCH /api/user/account</div>
+        <div class="endpoint-description">
+            <p>Endpoint para actualizar la cuenta de usuario.</p>
+            <p>Recibe en el body: <code>{ "username": "string", "email": "string", "password": "string" }</code></p>
+            <p>Devuelve en JSON un objeto con los datos de usuario actualizados.</p>
+        </div>
+    </div>
+
+</body>
+</html>

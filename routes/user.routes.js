@@ -10,3 +10,4 @@ userRouter.post('/section', UserController.createSection);
 userRouter.delete('/section', UserController.deleteSection);
 userRouter.post('/card', UserController.createCard);
 userRouter.delete('/card', UserController.deleteCard)
+userRouter.patch('/account', UserController.updateAccount)
