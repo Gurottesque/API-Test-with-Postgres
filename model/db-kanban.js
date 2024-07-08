@@ -6,11 +6,11 @@ dotenv.config();
 import * as marked from 'marked' ;
 
 export const pool = new pg.Pool({
-    user: process.env.DB_USER || "postgres",
-    host: process.env.DB_HOST || "localhost",
-    password: process.env.DB_PASS|| "123456",
-    database: process.env.DB_DATABASE|| "kaban",
-    port: process.env.DB_PORT||  "5432"
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    password: process.env.DB_PASS,
+    database: process.env.DB_DATABASE,
+    port: process.env.DB_PORT
 })
 
 export class KanbanDB {
