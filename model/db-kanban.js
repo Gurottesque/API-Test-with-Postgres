@@ -1,4 +1,5 @@
 import pg from 'pg';
+import marked from 'marked';
 
 export const pool = new pg.Pool({
     user: "postgres",
@@ -6,63 +7,56 @@ export const pool = new pg.Pool({
     password: "123456",
     database: "kaban",
     port: "5432"
-})
-
+});
 
 export class KanbanDB {
 
-    
     static async searchUser(username) {
         try {
-            return await pool.query(`SELECT username FROM users WHERE username = $1`, [username])
-        } catch(e) { console.error(e); throw e }
-        
+            return await pool.query(`SELECT username FROM users WHERE username = $1`, [username]);
+        } catch(e) { console.error(e); throw e; }
     }
 
     static async getPassword(username) {
         try {
-            return await pool.query(`SELECT passwd FROM users WHERE username = $1`, [username])
-        } catch(e) { console.error(e); throw e }
-        
+            return await pool.query(`SELECT passwd FROM users WHERE username = $1`, [username]);
+        } catch(e) { console.error(e); throw e; }
     }
 
     static async getID(username) {
         try {
-            return await pool.query(`SELECT id FROM users WHERE username = $1`, [username])
-        } catch(e) { console.error(e); throw e }
-        
+            return await pool.query(`SELECT id FROM users WHERE username = $1`, [username]);
+        } catch(e) { console.error(e); throw e; }
     }
-
 
     static async getAllUserSections(value) {
         try {
-            let userData = []
-            const sections_id = await pool.query(`SELECT title, id FROM section WHERE user_id = $1`, [value])
-            const objPromises = sections_id.rows.map( async (section) => {
-                const card = await pool.query('SELECT id, title, content FROM cards WHERE section_id = $1', [section.id])
-                const obj = {section_id : section.id, section_title : section.title, cards: card.rows}
-                userData.push(obj)
-                console.log(userData)
-            })
+            let userData = [];
+            const sections_id = await pool.query(`SELECT title, id FROM section WHERE user_id = $1`, [value]);
+            const objPromises = sections_id.rows.map(async (section) => {
+                const card = await pool.query('SELECT id, title, content FROM cards WHERE section_id = $1', [section.id]);
+                const cardsWithHtml = card.rows.map(card => ({
+                    ...card,
+                    contentHtml: marked(card.content) // Convertir el contenido Markdown a HTML
+                }));
+                const obj = { section_id: section.id, section_title: section.title, cards: cardsWithHtml };
+                userData.push(obj);
+            });
             await Promise.all(objPromises);
             return userData;
-        } catch(e) { console.error(e); throw e }
-        
+        } catch(e) { console.error(e); throw e; }
     }
 
-    
     static async getUserID(section_id) {
         try {
-            return await pool.query(`SELECT user_id FROM section WHERE id = $1`, [section_id])
-        } catch(e) { console.error(e); throw e }
-        
+            return await pool.query(`SELECT user_id FROM section WHERE id = $1`, [section_id]);
+        } catch(e) { console.error(e); throw e; }
     }
 
     static async getSectionID(card_id) {
         try {
-            return await pool.query(`SELECT section_id FROM cards WHERE id = $1`, [card_id])
-        } catch(e) { console.error(e); throw e }
-        
+            return await pool.query(`SELECT section_id FROM cards WHERE id = $1`, [card_id]);
+        } catch(e) { console.error(e); throw e; }
     }
 
     static async addSection(title, user_id) {
@@ -92,18 +86,15 @@ export class KanbanDB {
         }
     }
 
-
     static async deleteSection(section_id) {
         try {
-            return await pool.query(`DELETE FROM section WHERE id = $1`, [section_id])
-        } catch(e) { console.error(e); throw e }
-        
+            return await pool.query(`DELETE FROM section WHERE id = $1`, [section_id]);
+        } catch(e) { console.error(e); throw e; }
     }
 
     static async deleteCard(card_id) {
         try {
-            return await pool.query(`DELETE FROM cards WHERE id = $1`, [card_id])
-        } catch(e) { console.error(e); throw e }
-        
+            return await pool.query(`DELETE FROM cards WHERE id = $1`, [card_id]);
+        } catch(e) { console.error(e); throw e; }
     }
 }
