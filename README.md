@@ -1,6 +1,6 @@
 TO DO:
 
--Deploy en Supabase y Render
+-Deploy en Render
 
 -Actualizar controlador de autenticacion para añadir modificacion de valores
   - endpoint PATCH /api/auth/username
