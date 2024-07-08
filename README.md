@@ -15,5 +15,5 @@ To install localy go through the next steps
 
 This API its also accesible through: https://elite-kanban.onrender.com
 
-Read 'documentation.html' for the documentation or acces /api/documentation
+Read 'documentation.html' for the documentation or access /api/documentation
 
