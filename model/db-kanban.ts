@@ -1,122 +1,173 @@
-import pg from 'pg';
-import dotenv from 'dotenv';
+
+import { connect } from 'ts-postgres';
 import bcrypt from 'bcrypt';
 
-dotenv.config();
-import * as marked from 'marked' ;
 
-export const pool = new pg.Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    password: process.env.DB_PASS,
-    database: process.env.DB_DATABASE,
-    port: process.env.DB_PORT
-})
+const client = await connect({
+    user: 'postgres',
+    host: 'localhost',
+    password: '123456',
+    database: 'kaban',
+    port: 5432
+});
 
 export class KanbanDB {
+    
 
-    static async searchUser(username: string) {
+    static async searchUser(username: string) : Promise<Username | ErrorDB>{
         try {
-            return await pool.query(`SELECT username FROM users WHERE username = $1`, [username]);
-        } catch(e) { console.error(e); throw e; }
+            
+            const data = await client.query(`SELECT username FROM users WHERE username = $1`, [username]);
+            if (data.rows.length > 0) {
+                return { username: data.rows[0][0] }; 
+            } else {
+                return { message: 'User not found' }; 
+            }
+
+        } catch(e) { 
+            const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+            return error
+          }
+      }
+
+    static async getPassword(username: string) : Promise<Password | ErrorDB>{ 
+        try {
+            const data = await client.query(`SELECT passwd FROM users WHERE username = $1`, [username]);
+            if (data.rows.length > 0) {
+              return { passwd: data.rows[0][0] }; 
+          } else {
+              return { message: 'Password not found in user' }; 
+          }
+        } catch(e) { 
+          const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+          return error
+        }
+
+  }
+
+    static async getID(username: string) : Promise<UserID | ErrorDB>{
+      try {
+          
+          const data = await client.query(`SELECT id FROM users WHERE username = $1`, [username]);
+          return { id: data.rows[0][0] };
+
+      } catch(e) { 
+          const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+          return error
+        }
     }
 
-    static async getPassword(username: string)  {
-        try {
-            return await pool.query(`SELECT passwd FROM users WHERE username = $1`, [username]);
-        } catch(e) { console.error(e); throw e; }
-    }
 
-    static async getID(username: string) {
+    static async getAllUserSections(user_id: string): Promise<UserData | ErrorDB> {
         try {
-            return await pool.query(`SELECT id FROM users WHERE username = $1`, [username]);
-        } catch(e) { console.error(e); throw e; }
-    }
-
-    static async getAllUserSections(user_id: string) {
-        try {
-            let userData = [];
-            const sections_id = await pool.query(`SELECT title, id FROM section WHERE user_id = $1`, [user_id]);
-            const objPromises = sections_id.rows.map(async (section) => {
-                const card = await pool.query('SELECT id, title, content FROM cards WHERE section_id = $1', [section.id]);
-                const cardsWithHtml = card.rows.map(card => ({
-                    ...card,
-                    contentHtml: marked(card.content) // Convertir el contenido Markdown a HTML
-                }));
-                const obj = { section_id: section.id, section_title: section.title, cards: cardsWithHtml };
-                userData.push(obj);
+          let userdata: UserData = { sections: [] };
+            const sections_id = await client.query(`SELECT title, id FROM section WHERE user_id = $1`, [user_id]);            
+            const sections = sections_id.rows.map(async (section) => {
+                const cards = await client.query(`SELECT id, title, content FROM cards WHERE section_id = $1`, [section[1]]);
+                userdata.sections.push({ id: section[1], title: section[0], user_id: user_id, cards: cards.rows.map(card => ({ id: card[0], title: card[1], content: card[2], section_id: section[1] })) });
             });
-            await Promise.all(objPromises);
-            return userData;
+            await Promise.all(sections);
+            return userdata
         } catch(e) { console.error(e); throw e; }
     }
 
-    static async getUserID(section_id) {
-        try {
-            return await pool.query(`SELECT user_id FROM section WHERE id = $1`, [section_id]);
-        } catch(e) { console.error(e); throw e; }
-    }
 
-    static async getSectionID(card_id) {
-        try {
-            return await pool.query(`SELECT section_id FROM cards WHERE id = $1`, [card_id]);
-        } catch(e) { console.error(e); throw e; }
-    }
+    static async getUserID(section_id: string) : Promise<UserID | ErrorDB>{
+      try {
+          
+          const data = await client.query(`SELECT user_id FROM sections WHERE id = $1`, [section_id]);
+          return { id: data.rows[0][0] };
 
-    static async addSection(title, user_id) {
-        try {
-            return await pool.query(`INSERT INTO section (title, user_id) VALUES ($1, $2) RETURNING *`, [title, user_id]);
-        } catch (e) {
-            console.error(e);
-            throw e;
+      } catch(e) { 
+          const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+          return error
         }
     }
 
-    static async addCards(title, content, section_id) {
-        try {
-            await pool.query(`INSERT INTO cards (title, content, section_id) VALUES ($1, $2, $3)`, [title, content, section_id]);
-        } catch (e) {
-            console.error(e);
-            throw e;
+    static async getSectionID(card_id: string) : Promise<SectionID | ErrorDB>{
+      try {
+          
+          const data = await client.query(`SELECT section_id FROM cards WHERE id = $1`, [card_id]);
+          return { id: data.rows[0][0] };
+
+      } catch(e) { 
+          const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+          return error
         }
     }
+    static async addSection(title: string, user_id: string): Promise<Section | ErrorDB> {
+      try {
+        const data = await client.query(`INSERT INTO section (title, user_id) VALUES ($1, $2) RETURNING *`, [title, user_id]);
+        return { id: data.rows[0][0], title: data.rows[0][1], user_id: data.rows[0][2], cards: [] };
+      } catch(e) { 
+        const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+        return error
+      }
+    }
 
-    static async addUser(username, hashedPasswd, email) {
+    static async addCards(title: string, content: string, section_id: string): Promise<Card | ErrorDB> {
+      try {
+        const data = await client.query(`INSERT INTO cards (title, content, section_id) VALUES ($1, $2, $3) RETURNING *`, [title, content, section_id]);
+        return { id: data.rows[0][0], title: data.rows[0][1], content: data.rows[0][2], section_id: data.rows[0][3] };
+      } catch (e) {
+        const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+        return error;
+      }
+    }
+
+    static async addUser(username: string, hashedPasswd: string, email: string): Promise<User | ErrorDB>{
         try {
-            await pool.query(`INSERT INTO users (username, passwd, email) VALUES ($1, $2, $3)`, [username, hashedPasswd, email]);
+            const data = await client.query(`INSERT INTO users (username, passwd, email) VALUES ($1, $2, $3) RETURNING *`, [username, hashedPasswd, email]);
+            return { id: data.rows[0][0], username: data.rows[0][1], passwd: data.rows[0][2], email: data.rows[0][3] };
         } catch (e) {
-            console.error(e);
-            throw e;
+          const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+          return error;
         }
     }
-
-    static async deleteSection(section_id) {
-        try {
-            return await pool.query(`DELETE FROM section WHERE id = $1 RETURNING *`, [section_id]);
-        } catch(e) { console.error(e); throw e; }
+    static async deleteSection(section_id: string): Promise<Section | ErrorDB>{
+      try {
+        const data = await client.query(`DELETE FROM section WHERE id = $1 RETURNING *`, [section_id]);
+        const deletedCards = await client.query(`DELETE FROM cards WHERE section_id = $1 RETURNING *`, [section_id]);
+        const cards = deletedCards.rows.map(card => ({ id: card[0], title: card[1], content: card[2], section_id: card[3] }));
+        return { id: data.rows[0][0], title: data.rows[0][1], user_id: data.rows[0][2], cards: cards };
+      } catch (e) {
+        const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+        return error;
+      }
     }
-
-    static async deleteCard(card_id) {
-        try {
-            return await pool.query(`DELETE FROM cards WHERE id = $1 RETURNING *`, [card_id]);
-        } catch(e) { console.error(e); throw e; }
+    static async deleteCard(card_id: string): Promise<Card | ErrorDB> {
+      try {
+        const data = await client.query(`DELETE FROM cards WHERE id = $1 RETURNING *`, [card_id]);
+        return { id: data.rows[0][0], title: data.rows[0][1], content: data.rows[0][2], section_id: data.rows[0][3] };
+      } catch(e) { console.error(e); throw e; }
     }
+    static async updateUser(user_id: string, { username, email, password }: { username?: string, email?: string, password?: string }): Promise<User | ErrorDB> {
+      try {
+        const updates: string[] = [];
+        const values: any[] = [];
 
-    static async updateUser(user_id, {username, email, password}) {
-        // TO DO: refactorizar esta porqueria usando objetos y carga dinamica de valores en la query
-        try {
-            if (username){
-                await pool.query(`UPDATE users SET username = $1 WHERE id = $2`, [username,user_id]);
-            }
-            if (email){
-                await pool.query(`UPDATE users SET email = $1 WHERE id = $2`, [email, user_id]);
-            }
-            if (password){
-                await pool.query(`UPDATE users SET passwd = $1 WHERE id = $2`, [await bcrypt.hash(password, 7), user_id]);
-            }     
-            return await pool.query('SELECT * FROM users WHERE id = $1', [user_id])
+        if (username) {
+          updates.push('username = $1');
+          values.push(username);
+        }
+        if (email) {
+          updates.push('email = $2');
+          values.push(email);
+        }
+        if (password) {
+          updates.push('passwd = $3');
+          values.push(await bcrypt.hash(password, 7));
+        }
 
-        } catch(e) { console.error(e); throw e; }
+        const query = `UPDATE users SET ${updates.join(', ')} WHERE id = $${values.length + 1}`;
+        await client.query(query, [...values, user_id]);
+
+        const data = await client.query('SELECT * FROM users WHERE id = $1', [user_id]);
+        return { id: data.rows[0][0], username: data.rows[0][1], passwd: data.rows[0][2], email: data.rows[0][3] };
+      } catch (e) {
+        const error: ErrorDB = { message: 'Error en la base de datos: ' + e.message };
+        return error;
+      }
     }
 }
 
